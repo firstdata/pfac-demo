@@ -1,0 +1,53 @@
+{
+  "name": "pfac-demo",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.18.0",
+    "axios-mock-adapter": "1.15.0",
+    "body-parser": "^1.19.0",
+    "classnames": "^2.2.6",
+    "dompurify": "^1.0.11",
+    "express": "^4.17.1",
+    "history": "4.7.2",
+    "jquery": "3.2.1",
+    "jquery-ui": "^1.12.1",
+    "react": "^16.8.6",
+    "react-autocomplete": "^1.8.1",
+    "react-dom": "^16.8.6",
+    "react-geocode": "0.1.2",
+    "react-redux": "^7.1.0",
+    "react-router": "^5.0.1",
+    "react-router-dom": "^5.0.1",
+    "react-scripts": "3.0.1",
+    "redux": "^4.0.4",
+    "redux-thunk": "^2.3.0",
+    "style-loader": "^0.23.1",
+    "validator": "^11.1.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "proxy": "http://localhost:8080",
+  "devDependencies": {
+    "grunt": "^1.0.4"
+  }
+}
