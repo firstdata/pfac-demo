@@ -1,19 +1,12 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
-import {appPlatformName, platform_prefix} from '../../const';
+import $ from 'jquery';
 
 /**
  * Header layout
  */
+
 export default class Header extends React.Component {
-
-
-  /**
-   * constructor
-   */
-  constructor() {
-    super();
-  }
 
   /**
    * componentDidMount method
@@ -61,7 +54,7 @@ export default class Header extends React.Component {
       <header>
         <div id="top">
           <nav className="container">
-            <Link id="logo" to="/"><img src={`${platform_prefix}/img/logo_${appPlatformName}.png`} height="51px"/></Link>
+            <Link id="logo" to="/"><img src={require('../../img/Firstdata.png')} height="51px"/></Link>
           </nav>
         </div>
       </header>

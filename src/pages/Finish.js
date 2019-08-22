@@ -19,6 +19,18 @@ class Finish extends Component {
 
 		return (
 			<div>
+				<div id="breadcrumb-anchor"></div>
+				<div id="breadcrumb">
+				<div className="breadcrumb-inner container">
+					<div className="breadcrumb-mobile">
+					<a id="mobile-breadcrumb-toggle" className="current"><i className="fa fa-chevron-down"></i> <span>Business Information</span></a>
+					</div>
+					<ul>
+					<li><a style={{color:'#aaa'}}>Business Information</a></li>
+					<li><a className="current">Finish</a></li>
+					</ul>
+				</div>
+				</div>
 				<div className="main-content">
 					<form autoComplete="off" style={{ maxWidth: '100%', minHeight: '500px' }}>
 						<div className="container">

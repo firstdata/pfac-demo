@@ -153,7 +153,6 @@ class BusinessInfo extends Component {
                                     ssn: 'Invalid SSN/EIN',
                                     matches: 'Federal Tax ID (EIN) should be 9 digit number'
                                     }}
-                                    //icon={eyeIcon}
                                     onBlur = {this.iconClick}
                                 />
                             </div>:''}

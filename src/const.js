@@ -180,7 +180,10 @@ export const days = (function() {
 		days_arr = [];
 	let endDay = 31;
 	while (startDay <= endDay) {
-		days_arr.push({ abbr: startDay, name: startDay });
+		// Pfac sign up expects dob in yyyy-mm-dd format, hence days are made 2 digits.
+		startDay < 10
+			? days_arr.push({ abbr: '0'+startDay, name: '0'+startDay })
+			: days_arr.push({ abbr: startDay, name: startDay });
 		startDay++;
 	}
 	return days_arr;
@@ -201,14 +204,17 @@ export const months = [
 	{ abbr: '12', name: 'December' },
 ];
 
+
 export const organizations = [
+	// Supported organisation types for Pfac Signup
 	{ abbr: 'GOVERNMENT', name: 'Government' },
-	{ abbr: 'PARTNERSHIPS', name: 'Partnership' },
-	{ abbr: 'SOLE_PROPRIETORSHIP', name: 'Sole Ownership' },
-	{ abbr: 'PRIVATE_CORPORATION', name: 'Private Corporation' },
-	{ abbr: 'PUBLIC_CORPORATION', name: 'Public Corporation' },
-	{ abbr: 'LLC', name: 'Limited Liability Corporation (LLC)' },
-	{ abbr: 'TAX_EXEMPT', name: 'Non Profit / Tax Exempt' },
+	{ abbr: 'JOINT STOCK', name: 'Joint Stock' },
+	{ abbr: 'LIMITED', name: 'Limited Corporation' },
+	{ abbr: 'CORPORATION', name: 'Private Corporation' },
+	{ abbr: 'SOLE PROPRIETOR', name: 'Sole Ownership' },
+	{ abbr: 'NON PROFIT ORG', name: 'Non profit Organisation' },
+	{ abbr: 'PARTNERSHIP', name: 'Partnership' },
+	{ abbr: 'PUBLIC COMPANY', name: 'Public Corporation' },
 ];
 
 export const percentage = [
@@ -246,6 +252,11 @@ export const titles = [
 	{ abbr: 'member', name: 'Member L.L.C.' },
 	{ abbr: 'partner', name: 'Partner' },
 	{ abbr: 'other', name: 'Other' },
+];
+
+export const gender = [
+	{abbr: 'M', name: 'Male'},
+	{abbr: 'F', name: 'Female'}
 ];
 
 export const taxes = [

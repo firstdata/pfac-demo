@@ -3,9 +3,7 @@ import { Input, Select, Autocomplete } from '../components/elements/fancyField';
 import { Redirect } from 'react-router-dom';
 import OwnerComponent from '../components/elements/OwnerComponent';
 import BankingInfo from '../components/elements/BankingInfo';
-import { states, years, months, organizations, sales } from '../const';
 import Geocode from 'react-geocode';
-import { platform_prefix } from '../const';
 import BillingInfo from '../components/elements/BillingInfo';
 import BusinessInfo from '../components/elements/BusinessInfo';
 import * as ServiceActions from '../ServiceActions';
@@ -14,22 +12,6 @@ import { connect } from 'react-redux';
 class Signup extends Component {
 	constructor(props) {
 		super(props);
-
-		let yearsOptions = years.map(y => {
-			return { defaultValue: y.abbr, label: y.name };
-		});
-		let monthsOptions = months.map(m => {
-			return { defaultValue: m.abbr, label: m.name };
-		});
-		let stateOptions = states.map(s => {
-			return { defaultValue: s.abbr, label: s.name };
-		});
-		let organizationsOptions = organizations.map(o => {
-			return { defaultValue: o.abbr, label: o.name };
-		});
-		let salesOptions = sales.map(s => {
-			return { defaultValue: s.abbr, label: s.name };
-		});
 
 		this.state = {
 			businessInfo: {
@@ -47,7 +29,7 @@ class Signup extends Component {
 				business_website: '',
 				sale_amount: '',
 				cc_sales: '',
-				orgtype: 'SOLE_PROPRIETORSHIP',
+				orgtype: 'SOLE PROPRIETOR',
 
 				business_address_1: '',
 				business_address_2: '',
@@ -60,6 +42,7 @@ class Signup extends Component {
 					owner_name: '',
 					owner_title: 'owner',
 					owner_phone: '',
+					owner_gender: '',
 					owner_dob_month: '',
 					owner_dob_day: '',
 					owner_dob_year: '',
@@ -77,9 +60,7 @@ class Signup extends Component {
 			formErrors: {},
 			actionIcon: 'fancy-field-icon fa fa-eye',
 			actionType: 'text',
-			yearsOptions: yearsOptions,
 			bankingInfo: {},
-			stateOptions: stateOptions,
 			routingError: false,
 			routingInfo: false,
 			products: [],
@@ -91,45 +72,13 @@ class Signup extends Component {
 			routingInfo: false,
 			shippingInfo: {},
 			showEIN: false,
+			cartDetails: [],
+			isReaderProduct: false,
 		};
 
 		Geocode.setApiKey('AIzaSyBG-Xskhm-9KiwwajAKuLJPj7_b6dl4YBg');
 
-		ServiceActions.getProductsList();	
-	}
-
-	getCart = () => {
-			let products = this.props.products.filter(p => p.productType !== 'GFT');
-
-			if (products.length === 1) {
-				let cartDetails = [], isReaderProduct = false;
-				let qty = 1;
-				const readerType = 'FirstDataPOS';
-
-				products.forEach(p => {
-					let orderedProd = {
-						productId: p.productId,
-						price: 0,
-						qty: qty,
-						term: p.defaultPurchaseType,
-						productType: p.productType,
-					};
-					if (cartDetails.length === 0) {
-						cartDetails.push(orderedProd);
-					} else {
-						cartDetails[0] = orderedProd;
-					}
-					isReaderProduct = p.offeringTypes.find(type => type === readerType) !== undefined ? true : false;
-				});
-				return {
-					cartDetails,
-					isReaderProduct
-				};
-			}
-			return {
-				cartDetails: [],
-				isReaderProduct: false,
-			};
+		ServiceActions.getProductsList();
 	}
 
 	/**
@@ -232,8 +181,9 @@ class Signup extends Component {
 
 		let new_owner = {
 			owner_name: '',
-			owner_title: 'owner',
+			owner_title: '',
 			owner_phone: '',
+			owner_gender: '',
 			owner_dob_month: '',
 			owner_dob_day: '',
 			owner_dob_year: '',
@@ -256,13 +206,12 @@ class Signup extends Component {
 	 * @return {boolean}
 	 */
 	isSubmitReady = () => {
-		const { formErrors , spin, routingError } = this.state;
+		const { formErrors, spin, routingError, cartDetails } = this.state;
 
 		if (!formErrors.$valid) {
 			return false;
 		}
 
-		const { cartDetails } = this.getCart()
 		if (!cartDetails || cartDetails.length < 1) {
 			return false;
 		}
@@ -367,13 +316,17 @@ class Signup extends Component {
 	updateShippingInfo = (key, val) => {
 		let { shippingInfo } = this.state;
 
-
 		shippingInfo['businessAddress2'] = '';
 		shippingInfo[key] = val;
 
 		this.setState({ shippingInfo });
 	};
 
+	/**
+	 * Update shipping information when same as business address is checked by the user.
+	 *
+	 * @memberof Signup
+	 */
 	updateShipping = () => {
 		let { isShippingChecked, shippingInfo, businessInfo, formErrors } = this.state;
 		isShippingChecked = !isShippingChecked;
@@ -389,7 +342,7 @@ class Signup extends Component {
 			formErrors.businessCity.$error = false;
 			formErrors.businessState.$error = false;
 			formErrors.businessZip.$error = false;
-		} else { 
+		} else {
 			shippingInfo.businessZip = '';
 			shippingInfo.businessAddress1 = '';
 			shippingInfo.businessAddress2 = '';
@@ -493,6 +446,49 @@ class Signup extends Component {
 	};
 
 	/**
+	 * addToOrder
+	 * @product - product to add
+	 */
+	addToOrder = product => {
+		let { cartDetails, isReaderProduct } = this.state;
+		let qty = 1;
+		const readerType = 'FirstDataPOS';
+
+		let orderedProd = {
+			productId: product.productId,
+			price: 0,
+			qty: qty,
+			term: product.defaultPurchaseType,
+			productType: product.productType,
+		};
+
+		cartDetails.push(orderedProd);
+		let isReader = product.offeringTypes.find(type => type === readerType) !== undefined ? true : false;
+
+		this.setState({
+			cartDetails: cartDetails,
+			isReaderProduct: isReader,
+		});
+	};
+
+	/**
+	 * removeFromOrder
+	 * @product
+	 */
+	removeFromOrder = product => {
+		let { cartDetails } = this.state;
+
+		cartDetails = cartDetails.filter(item => {
+			return !(item.productId === product.productId);
+		});
+
+		this.setState({
+			cartDetails: cartDetails,
+			isReaderProduct: false,
+		});
+	};
+
+	/**
 	 * Update businessInfo from BusinessInfo component
 	 */
 
@@ -504,7 +500,7 @@ class Signup extends Component {
 		if (key == 'legalIsDBA') {
 			this.setState({ businessInfo: businessInfo, showLegalDBA: val === 'n' });
 		} else if (key == 'files_taxes') {
-			this.setState({ businessInfo: businessInfo, showEIN: (val === 'ein') });
+			this.setState({ businessInfo: businessInfo, showEIN: val === 'ein' });
 		} else {
 			this.setState({ businessInfo: businessInfo });
 		}
@@ -543,6 +539,7 @@ class Signup extends Component {
 		let siteSurvey = {
 			siteVisitation: 'N',
 			onSiteVisitPerformed: 'N',
+			productsandServicesSold: 'OPTICAL',
 		};
 		data.siteSurvey = siteSurvey;
 	};
@@ -577,7 +574,7 @@ class Signup extends Component {
 				? businessInfo.business_address_1 + ', ' + businessInfo.business_address_2
 				: businessInfo.business_address_1;
 		let billing_address =
-			(shippingInfo.businessAddress2 && shippingInfo.businessAddress2.length > 2)
+			shippingInfo.businessAddress2 && shippingInfo.businessAddress2.length > 2
 				? shippingInfo.businessAddress1 + ', ' + shippingInfo.businessAddress2
 				: shippingInfo.businessAddress1;
 		merchantContactInformation.push(
@@ -594,12 +591,12 @@ class Signup extends Component {
 			},
 			{
 				contactType: 'BILLING',
-				state: shippingInfo.business_state,
-				postalCode: shippingInfo.business_zip,
+				state: shippingInfo.businessState,
+				postalCode: shippingInfo.businessZip,
 				address1: billing_address,
 				phone: this.trimPhone(businessInfo.business_phone),
 				country: 'USA',
-				city: shippingInfo.business_city,
+				city: shippingInfo.businessCity,
 				email: businessInfo.email,
 				url: 'ENT.COM',
 			}
@@ -635,47 +632,48 @@ class Signup extends Component {
 			businessToConsumer: '100',
 		};
 
-		merchantInfo.timeframeforDelivery = timeframeforDelivery;
-		merchantInfo.percentOfAnnualCardVolume = percentOfAnnualCardVolume;
-		merchantInfo.percentageOfTotalAnnualVolume = percentageOfTotalAnnualVolume;
-		merchantInfo.highestTicket = 56;
-		merchantInfo.faceToFace = '100';
-		merchantInfo.percentTransactionsOverPhoneorEmail = '0';
-		merchantInfo.percentTransactionsOverInternet = '0';
-		merchantInfo.stateOfIncorporation = businessInfo.incorp_state;
-		merchantInfo.taxFilingName = businessInfo.dbaName;
-		merchantInfo.istheBusinessaForeignEntity = 'N';
-		merchantInfo.tinRequestedGuid = '17487900F244257DA';
-		merchantInfo.dbaName = businessInfo.dbaName;
-		merchantInfo.legalName = showLegalDBA ? businessInfo.legal_business_name : businessInfo.dbaName;
-		merchantInfo.organizationType = businessInfo.orgtype;
-		merchantInfo.employeeIdentificationNumber = ownerInfo.owner_ssn;
-		merchantInfo.yearsInBusiness = businessInfo.business_year + '-' + businessInfo.business_month + '-' + '01'; //'1919-07-01';
-		merchantInfo.yearsAtLocation = businessInfo.business_year + '-' + businessInfo.business_month + '-' + '01'; //'1919-07-01';
-		merchantInfo.obtained = 'Y';
-		merchantInfo.endDate = '2027-03-01';
-		merchantInfo.agentEmail = 'test_merchant@gyft.com';
-		merchantInfo.totalRevenue = '2000';
-		merchantInfo.netIncome = '1000';
-		merchantInfo.totalAssets = '2500';
-		merchantInfo.totalLiabilities = '1500';
-		merchantInfo.tangibleNetWorth = '2400';
-		merchantInfo.workingCapital = '2300';
-		merchantInfo.currentRation = '1.2';
-		merchantInfo.debtToTNWRatio = '0.5';
-		merchantInfo.country = 'USA';
-		merchantInfo.salesCurrency = [{ currency: 'USD' }];
-		merchantInfo.pricingType = '01';
-		merchantInfo.payeezyIndicator = 'N';
-		merchantInfo.visa = 'Y';
-		merchantInfo.mc = 'N';
-		merchantInfo.fundingCurrency = [{ currency: 'USD' }];
-		merchantInfo.contractSignDate = '2018-01-01';
-		merchantInfo.legalContactName = 'test name';
-		merchantInfo.irsSparkExclusion = 'N';
-		merchantInfo.yearIncorporated = businessInfo.business_year + '-' + businessInfo.business_month + '-' + '01'; //'1919-07-01';
+		merchantLocationInformation.push({
+			timeframeforDelivery: timeframeforDelivery,
+			percentOfAnnualCardVolume: percentOfAnnualCardVolume,
+			percentageOfTotalAnnualVolume: percentageOfTotalAnnualVolume,
+			highestTicket: 56,
+			faceToFace: '100',
+			percentTransactionsOverPhoneorEmail: '0',
+			percentTransactionsOverInternet: '0',
+			stateOfIncorporation: businessInfo.incorp_state,
+			taxFilingName: businessInfo.dbaName,
+			istheBusinessaForeignEntity: 'N',
+			tinRequestedGuid: '17487900F244257DA',
+			dbaName: businessInfo.dbaName,
+			legalName: showLegalDBA ? businessInfo.legal_business_name : businessInfo.dbaName,
+			organizationType: businessInfo.orgtype,
+			employeeIdentificationNumber: ownerInfo[0].owner_ssn.replace(/-/g, ''),
+			yearsInBusiness: businessInfo.business_year + '-' + businessInfo.business_month + '-' + '01', //'1919-07-01',
+			yearsAtLocation: businessInfo.business_year + '-' + businessInfo.business_month + '-' + '01', //'1919-07-01',
+			obtained: 'Y',
+			endDate: '2027-03-01',
+			agentEmail: 'test_merchant@gyft.com',
+			totalRevenue: '2000',
+			netIncome: '1000',
+			totalAssets: '2500',
+			totalLiabilities: '1500',
+			tangibleNetWorth: '2400',
+			workingCapital: '2300',
+			currentRation: '1.2',
+			debtToTNWRatio: '0.5',
+			country: 'USA',
+			salesCurrency: [{ currency: 'USD' }],
+			pricingType: '01',
+			payeezyIndicator: 'N',
+			visa: 'Y',
+			mc: 'N',
+			fundingCurrency: [{ currency: 'USD' }],
+			contractSignDate: '2018-01-01',
+			legalContactName: 'test name',
+			irsSparkExclusion: 'N',
+			yearIncorporated: businessInfo.business_year, //'1919-07-01'; + '-' + businessInfo.business_month + '-' + '01'
+		});
 
-		merchantLocationInformation.push(merchantInfo);
 		data.merchantLocationInformation = merchantLocationInformation;
 	};
 
@@ -687,26 +685,21 @@ class Signup extends Component {
 		let owInfo = [];
 		let { ownerInfo } = this.state;
 
-		ownerInfo.forEach(oi => {
-			let formatted_oi = {};
-			let firstName = this.getFirstName(oi.owner_name);
-			let lastName = this.getLastName(oi.owner_name);
-			let address =
-				oi.owner_address_2.length > 2 ? oi.owner_address_1 + ', ' + oi.owner_address_2 : oi.owner_address_1;
-
-			formatted_oi.firstName = firstName;
-			formatted_oi.lastName = lastName;
-			formatted_oi.dateofBirth = oi.owner_dob_year + '-' + oi.owner_dob_month + '-' + oi.owner_dob_day;
-			formatted_oi.nationalId = oi.owner_ssn.replace(/-/g, '');
-			formatted_oi.title = oi.owner_title;
-			formatted_oi.percentageOwnership = oi.owner_percent;
-			formatted_oi.isPrimary = ownerInfo.length == 1 ? 'Y' : 'N';
-			formatted_oi.gender = 'M';
-			formatted_oi.taxId = oi.owner_ssn.replace(/-/g, '');
-
-			owInfo.push(formatted_oi);
+		ownerInfo.forEach((oi, idx) => {
+			owInfo.push({
+				firstName: this.getFirstName(oi.owner_name),
+				lastName: this.getLastName(oi.owner_name),
+				address:
+					oi.owner_address_2.length > 2 ? oi.owner_address_1 + ', ' + oi.owner_address_2 : oi.owner_address_1,
+				dateOfBirth: oi.owner_dob_year + '-' + oi.owner_dob_month + '-' + oi.owner_dob_day,
+				nationalId: oi.owner_ssn.replace(/-/g, ''),
+				title: oi.owner_title,
+				percentageOwnership: oi.owner_percent,
+				isPrimary: idx == 0 ? 'Y' : 'N',
+				gender: oi.owner_gender,
+				taxId: oi.owner_ssn.replace(/-/g, ''),
+			});
 		});
-
 		data.ownerInformation = owInfo;
 	};
 
@@ -735,28 +728,31 @@ class Signup extends Component {
 			return;
 		}
 
-		const { cardReaderQty, bankingInfo /*, cartDetails*/, shippingInfo, isReaderProduct } = this.state;
+		const { cartDetails, spin } = this.state;
 
-		let data = {};
-
-		const { cartDetails } = this.getCart()
-		if (cartDetails.length > 0) { 
-			if (isReaderProduct) {
-				cartDetails[0].qty = cardReaderQty;
-			}
-			data.cartDetails = cartDetails;
-			data.numberOfOutlets = cartDetails.length;
+		let req = {};
+		let data = [];
+		if (cartDetails.length > 0) {
+			cartDetails.forEach(cart => {
+				data.push(cart);
+			});
 		}
 
-		this.defaultMerchantCreditInfo(data);
-		this.defaultSiteSurvey(data);
-		this.addMerchantTransactionInformation(data);
-		this.addMerchantContactInformation(data);
-		this.addMerchantLocationInformation(data);
-		this.addOwnerInfo(data);
-		this.addBankInformation(data);
+		req.cartDetails = { data: data };
+		req.numberOfOutlets = cartDetails.length;
 
-		ServiceActions.pfacSignup(data);
+		this.defaultMerchantCreditInfo(req);
+		this.defaultSiteSurvey(req);
+		this.addMerchantTransactionInformation(req);
+		this.addMerchantContactInformation(req);
+		this.addMerchantLocationInformation(req);
+		this.addOwnerInfo(req);
+		this.addBankInformation(req);
+
+		ServiceActions.pfacSignup(req);
+		this.setState({
+			spin: true,
+		});
 	};
 
 	/**
@@ -766,27 +762,15 @@ class Signup extends Component {
 		let {
 			formErrors,
 			businessInfo,
-			redirect,
-			actionType,
 			actionIcon,
-			yearsOptions,
-			monthsOptions,
-			stateOptions,
-			organizationsOptions,
-			salesOptions,
-			ownerInfo,
 			bankingInfo,
-			routingError,
-			routingInfo,			
-			cardReaderQty,			
-			isShippingChecked,
+			cardReaderQty,
 			shippingInfo,
 			spin,
 			showEIN,
 			showLegalDBA,
+			cartDetails,
 		} = this.state;
-
-		const {cartDetails, isReaderProduct} = this.getCart();
 
 		const eyeIcon = {
 			className: actionIcon,
@@ -801,51 +785,60 @@ class Signup extends Component {
 		const eqProducts = this.props.products.map(c => {
 			let index = cartDetails.findIndex(e => e.productId === c.productId);
 			let isReader = c.offeringTypes.find(type => type === readerType) !== undefined ? true : false;
+			let isCartEmpty = cartDetails.length === 0 ? true : false;
 
+			let thumbImg;
 			let thumbUrl = '//cdn.firstdata.com/global/img/default-placeholder.png';
+
+			// logic to pick thumb url if any
 			if (c.imageUrls !== undefined && c.imageUrls !== null && c.imageUrls.length > 0) {
-				thumbUrl = c.imageUrls.length > 1 ? c.imageUrls[1] : c.imageUrls[0];
+				let thumbIndex = -1,
+					largeIndex = -1;
+				for (let i = 0; i < c.imageUrls.length; i++) {
+					if (thumbIndex == -1 && c.imageUrls[i].indexOf('thumb') > -1) {
+						thumbIndex = i;
+					} else if (largeIndex == -1 && c.imageUrls[i].indexOf('large') > -1) {
+						largeIndex = i;
+					}
+					if (thumbIndex != -1 && largeIndex != -1) break;
+				}
+
+				if (thumbIndex > -1) {
+					thumbImg = <img src={c.imageUrls[thumbIndex]} style={{ height: 125, width: 125 }} />;
+				} else if (largeIndex > -1) {
+					thumbImg = <img src={c.imageUrls[largeIndex]} style={{ height: 125, width: 125 }} />;
+				} else {
+					thumbImg = <img src={thumbUrl} />;
+				}
 			}
 			let actionBtn = <a style={{ visibility: 'hidden' }}>hidden</a>;
 
+			index > -1
+				? (actionBtn = (
+						<a
+							className="button small add-to-order show-address red"
+							onClick={() => {
+								this.removeFromOrder(c);
+							}}
+						>
+							Remove
+						</a>
+				  ))
+				: (actionBtn = (
+						<a
+							className="button small add-to-order show-address"
+							onClick={() => {
+								this.addToOrder(c);
+							}}
+						>
+							Add to Order
+						</a>
+				  ));
+
 			return (
-				<div className="column-12 include-detail" key={c.id}>
-					<div className="column-3">
-						<img src={thumbUrl} />
-						<br />
-						{actionBtn}
-					</div>
-					<div className="column-9">
-						<h2>{c.productName ? c.productName : ''}</h2>
-						<p>{c.productShortDescription ? c.productShortDescription : ''}</p>
-						<br />
-						<br />
-						{index > -1 && isReader ? (
-							<div id="reader-quantity" style={{ marginTop: '10px' }}>
-								<Input
-									name="cardReaderQty"
-									id="cardReaderQty"
-									type="text"
-									placeholder="Card Reader Quantity"
-									rules={['required', 'numeric', ['isLength', { min: 1, max: 3 }]]}
-									formErrors={formErrors}
-									defaultValue={cardReaderQty}
-									inputChanged={v => {
-										this.setState({ cardReaderQty: v });
-									}}
-									required
-									autoComplete="nope"
-									errorMessages={{
-										numeric: 'Only numeric values allowed',
-										required: 'The field is required',
-										isLength: 'Card Reader Quantity can not exceed 1000',
-									}}
-								/>
-							</div>
-						) : (
-							''
-						)}
-					</div>
+				<div className=" product column-2" key={c.id}>
+					<div>{thumbImg}</div>
+					{actionBtn}
 				</div>
 			);
 		});
@@ -855,53 +848,79 @@ class Signup extends Component {
 		}
 
 		return (
-			<div className="main-content">
-				<form autoComplete="off" style={{ maxWidth: '100%' }}>
-					<div className="container margin-top">
-						<h1 className="align-center">Let's sign you up.</h1>
-						<p className="subhead align-center">
-							<span className="small">
-								Payment processing fees will be the cost of interchange and $0.04 for all transactions.
-								Clover Go App & Reader is included with this agreement.
-							</span>
-						</p>
-
-						<br />
-
-						<BusinessInfo
-							formErrors={formErrors}
-							showLegalDBA={showLegalDBA}
-							formatPhone={this.formatPhone}
-							populateBICityNState={this.populateBICityNState}
-							updateBusinessInfo={this.updateBusinessInfo}
-							businessInfo={businessInfo}
-							showEIN={showEIN}
-							handleDBAChange={this.handleDBAChange}
-						/>
-
-						<div className="form-group clearfix margin-top">
-							<h2>Tell us about the owner.</h2>
-							{OwnerComponents}
-							<div className="clearfix">
-								<a className="link add-owner" onClick={() => this.addOwner()}>
-									<strong>
-										<i className="fa fa-plus" /> Add additional owner(s)
-									</strong>
-								</a>
-							</div>
+			<div>
+				<div id="breadcrumb-anchor" />
+				<div id="breadcrumb">
+					<div className="breadcrumb-inner container">
+						<div className="breadcrumb-mobile">
+							<a id="mobile-breadcrumb-toggle" className="current">
+								<i className="fa fa-chevron-down" /> <span>Troop Information</span>
+							</a>
 						</div>
+						<ul>
+							<li>
+								<a className="current">Business Information</a>
+							</li>
+							<li>
+								<a style={{ color: '#aaa' }}>Finish</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div className="main-content">
+					<form autoComplete="off" style={{ maxWidth: '100%' }}>
+						<div className="container margin-top">
+							<h1 className="align-center">Let's sign you up.</h1>
+							<p className="subhead align-center">
+								<span className="small">
+									Payment processing fees will be the cost of interchange and $0.04 for all
+									transactions. Clover Go App & Reader is included with this agreement.
+								</span>
+							</p>
 
-						<BankingInfo
-							formErrors={formErrors}
-							bankingInfo={bankingInfo}
-							updateState={this.updateBankingInfo}
-						/>
+							<br />
 
-						<div className="form-group clearfix margin-top">
-							<h2>Equipment</h2>
-							<p className="subhead">Quantity 1 Clover Go has been selected</p>
-							<div>{eqProducts}</div>
-							{isReaderProduct ? (
+							<BusinessInfo
+								formErrors={formErrors}
+								showLegalDBA={showLegalDBA}
+								formatPhone={this.formatPhone}
+								populateBICityNState={this.populateBICityNState}
+								updateBusinessInfo={this.updateBusinessInfo}
+								businessInfo={businessInfo}
+								showEIN={showEIN}
+								handleDBAChange={this.handleDBAChange}
+							/>
+
+							<div className="form-group clearfix margin-top">
+								<h2>Tell us about the owner.</h2>
+								{OwnerComponents}
+								<div className="clearfix">
+									<a className="link add-owner" onClick={() => this.addOwner()}>
+										<strong>
+											<i className="fa fa-plus" /> Add additional owner(s)
+										</strong>
+									</a>
+								</div>
+							</div>
+
+							<BankingInfo
+								formErrors={formErrors}
+								bankingInfo={bankingInfo}
+								updateState={this.updateBankingInfo}
+							/>
+
+							<div className="form-group clearfix margin-top">
+								<h2>Equipment</h2>
+								<p className="subhead">Please select your equipment preferences.</p>
+								<p className="subhead">Clover hardware is non-refundable.</p>
+								<p className="subhead">
+									All items shipped, not including the Clover Go App, will include a $10 shipping fee.
+								</p>
+
+								<div>{eqProducts}</div>
+							</div>
+
+							<div className="form-group clearfix margin-top">
 								<BillingInfo
 									populateCityNState={this.populateCityNState}
 									formErrors={formErrors}
@@ -910,33 +929,33 @@ class Signup extends Component {
 									businessInfo={businessInfo}
 									shippingInfo={shippingInfo}
 								/>
-							) : null}
-						</div>
+							</div>
 
-						<hr className="clearfix margin-top" />
+							<hr className="clearfix margin-top" />
 
-						<div className="form-group form-actions column-12 align-center">
-							<a
-								className={`button${this.isSubmitReady() ? '' : ' disabled'}`}
-								style={{ margin: '0 auto' }}
-								onClick={this.submit}
-							>
-								{spin ? <i className="fa fa-spinner fa-spin fa-lg fa-fw" /> : 'Continue'}
-							</a>
+							<div className="form-group form-actions column-12 align-center">
+								<a
+									className={`button${this.isSubmitReady() ? '' : ' disabled'}`}
+									style={{ margin: '0 auto' }}
+									onClick={this.submit}
+								>
+									{spin ? <i className="fa fa-spinner fa-spin fa-lg fa-fw" /> : 'Continue'}
+								</a>
+							</div>
 						</div>
-					</div>
-				</form>
+					</form>
+				</div>
 			</div>
 		);
 	}
 }
 
-function mapStateToProps({ getProducts, orderDetails }) {
+function mapStateToProps({ productDetails, orderDetails }) {
 	const { orderId } = orderDetails;
+
 	return {
-		products: getProducts,
-		orderId
-	}
-	
+		products: productDetails,
+		orderId,
+	};
 }
 export default connect(mapStateToProps)(Signup);

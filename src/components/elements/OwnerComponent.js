@@ -1,6 +1,6 @@
 import React from 'react';
 import { Input, Select} from './fancyField';
-import {titles, months, days, years, taxes, states, percentage } from '../../const';
+import {titles, months, days, years, taxes, states, percentage, gender } from '../../const';
 import Geocode from 'react-geocode';
 
 /**
@@ -22,6 +22,7 @@ export default class OwnerComponent extends React.Component {
     let taxesOptions = taxes.map(t => {return {defaultValue: t.abbr, label: t.name};});
     let statesOptions = states.map(s => {return {defaultValue: s.abbr, label: s.name};});
     let percentageOptions = percentage.map(p => {return {defaultValue: p.abbr, label: p.name};});
+    let genderOptions = gender.map(g => {return {defaultValue: g.abbr, label: g.name}});
 
     this.state = {
       titlesOptions: titlesOptions,
@@ -31,6 +32,7 @@ export default class OwnerComponent extends React.Component {
       taxesOptions: taxesOptions,
       statesOptions: statesOptions,
       percentageOptions: percentageOptions,
+      genderOptions: genderOptions,
       actionIcon: 'fancy-field-icon fa fa-eye',
       actionType: 'text',
     };
@@ -194,7 +196,7 @@ export default class OwnerComponent extends React.Component {
   render(){
 
     let {titlesOptions, monthsOptions, daysOptions, yearsOptions, taxesOptions, statesOptions,
-      percentageOptions, actionIcon, actionType} = this.state;
+      percentageOptions, actionIcon, actionType, genderOptions} = this.state;
 
     const zipLength = 5;
     const eyeIcon = {
@@ -232,7 +234,6 @@ export default class OwnerComponent extends React.Component {
                     required: 'The field is required',
                   }}
                 />
-
               </div>
 
               <div className="column-4" style={{padding: '0 0 0 8px'}}>
@@ -253,7 +254,9 @@ export default class OwnerComponent extends React.Component {
 
               </div>
             </div>
+
             <div className="form-element">
+              <div className="column-8" style={{padding: '0px'}}>
               <Input placeholder='Phone Number'
                   name={`owner_phone_${this.props.index}`}
                   rules={['required', ['matches', /^([0-9]( |-)?)?(\(?[0-9]{3}\)?|[0-9]{3})( |-)?([0-9]{3}( |-)?[0-9]{4}|[a-zA-Z0-9]{7})$/]]}
@@ -268,7 +271,25 @@ export default class OwnerComponent extends React.Component {
                   }}
                   onBlur = {()=> {this.formatPhone(this.props.index, `owner_phone_${this.props.index}`);}}
               />
+              </div>
 
+              <div className="column-4" style={{padding: '0 0 0 8px'}}>
+
+                <Select placeholder="Gender"
+                  name={`owner_gender_${this.props.index}`}
+                  options={genderOptions}
+                  rules={['required']}
+                  formErrors={this.props.formErrors}
+                  defaultValue={this.props.ownerInfo.owner_gender}
+                  inputChanged={(v) => this.updateOwnerInfo(v, this.props.index, 'owner_gender')}
+                  required
+                  autoComplete='nope'
+                  errorMessages={{
+                    required: 'The field is required',
+                  }}
+                />
+
+              </div>
             </div>
             <div className="form-element">
               <Input placeholder='Email'
