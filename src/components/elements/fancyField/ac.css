@@ -1,0 +1,23 @@
+.autocomplete .menu {
+    position: absolute;
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid #cccccc;
+    z-index: 10;
+}
+
+.autocomplete .item {
+    padding: 2px 6px;
+    cursor: default;
+}
+
+.autocomplete .item-highlighted {
+    color: white;
+    background-color: #4095bf;
+}
+
+.autocomplete .item-header {
+    background-color: #eeeeee;
+    color: #454545;
+    font-weight: bold;
+}
