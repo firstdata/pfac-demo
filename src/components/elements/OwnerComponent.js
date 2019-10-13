@@ -87,7 +87,6 @@ export default class OwnerComponent extends React.Component {
             this.props.onUpdate.call(this, '', i, 'owner_city');
             this.props.onUpdate.call(this, '', i, 'owner_state');
           }
-          console.log(error);
         }
     );
   }
@@ -402,7 +401,6 @@ export default class OwnerComponent extends React.Component {
                 defaultValue={this.props.ownerInfo.owner_address_1}
                 inputChanged={(v) => this.updateOwnerInfo(v, this.props.index, 'owner_address_1')}
                 required
-                autoComplete='nope'
                 errorMessages={{
                   required: 'The field is required',
                 }}

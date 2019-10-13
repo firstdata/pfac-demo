@@ -2,12 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 class Finish extends Component {
-	constructor() {
-		super();
-
-		this.state = {
-			redirectURL: '/',
-		};
+	constructor(props) {
+		super(props);
 	}
 
 	/**
@@ -15,19 +11,16 @@ class Finish extends Component {
 	 * @return {XML}
 	 */
 	render() {
-		let { redirectURL } = this.state;
 
 		return (
 			<div>
 				<div id="breadcrumb-anchor"></div>
 				<div id="breadcrumb">
 				<div className="breadcrumb-inner container">
-					<div className="breadcrumb-mobile">
-					<a id="mobile-breadcrumb-toggle" className="current"><i className="fa fa-chevron-down"></i> <span>Business Information</span></a>
-					</div>
 					<ul>
-					<li><a style={{color:'#aaa'}}>Business Information</a></li>
-					<li><a className="current">Finish</a></li>
+						<li><a className="link" href="/">Business Information</a></li>
+						<li><a style={{color:'#aaa'}}>Merchant Agreement</a></li>
+						<li><a className="current">Finish</a></li>
 					</ul>
 				</div>
 				</div>
@@ -39,20 +32,13 @@ class Finish extends Component {
 									<span className="fa-stack" style={{ color: 'green', fontSize: '55%' }}>
 										<i className="fa fa-circle-thin fa-stack-2x" />
 										<i className="fa fa-check fa-stack-1x" />
-									</span>{' '}
-									Thank You!
+									</span> Thank You!
 								</h1>
-								<h4>Your order id is: {this.props.orderId}</h4>
-								<p>
-									Thank you for signing up. Your Clover Go CardReader will be shipped in 3 Business
-									days.
-								</p>
-								<br />
-								<p>
-									<a className="button" href={redirectURL}>
-										Go Back to PFAC
-									</a>
-								</p>
+								<br/>
+								<h4>Your order ID is: <strong>{this.props.orderId || 'jpBpn'}</strong></h4>
+								<p className="subhead">Thank you for signing up. Your Clover Go CardReader will be shipped in 3 Business days.</p>
+								<br/>
+								<p><a className="button" href="/"> Go Back to PFAC </a></p>
 							</div>
 						</div>
 					</form>
@@ -64,7 +50,9 @@ class Finish extends Component {
 
 function mapStateToProps({ orderDetails }) {
 	const { orderId } = orderDetails;
-	return { orderId };
+	return {
+		orderId
+	};
 }
 
 export default connect(mapStateToProps)(Finish);
