@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { Input, Select, Autocomplete} from './fancyField';
-import {titles, months, days, years, taxes, states, percentage, organizations } from '../../const';
+import { months, years, states, organizations } from '../../const';
 import {  sales} from '../../const';
 import Geocode from 'react-geocode';
 
@@ -50,7 +50,7 @@ class BusinessInfo extends Component {
 
     render() {
         const zipLength = 5;
-        const {dbaList, showEIN, yearsOptions, monthsOptions, stateOptions, organizationsOptions, salesOptions} = this.state;
+        const {dbaList, yearsOptions, monthsOptions, stateOptions, organizationsOptions, salesOptions} = this.state;
 
         return (
             <div className="form-group" style={{clear: 'both'}}>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Input, Select, Autocomplete } from '../components/elements/fancyField';
+import { Input } from '../components/elements/fancyField';
 import { Redirect } from 'react-router-dom';
 import OwnerComponent from '../components/elements/OwnerComponent';
 import BankingInfo from '../components/elements/BankingInfo';
@@ -68,8 +68,6 @@ class Signup extends Component {
 			isShippingChecked: false,
 			spin: false,
 			showLegalDBA: false,
-			routingError: false,
-			routingInfo: false,
 			shippingInfo: {},
 			showEIN: false,
 			cartDetails: [],
@@ -272,7 +270,6 @@ class Signup extends Component {
 				this.setState({
 					businessInfo: businessInfo,
 				});
-				console.log(error);
 			}
 		);
 	};
@@ -305,7 +302,6 @@ class Signup extends Component {
 				this.setState({
 					shippingInfo: shippingInfo,
 				});
-				console.log(error);
 			}
 		);
 	};
@@ -450,16 +446,16 @@ class Signup extends Component {
 	 * @product - product to add
 	 */
 	addToOrder = product => {
-		let { cartDetails, isReaderProduct } = this.state;
+		let { cartDetails } = this.state;
 		let qty = 1;
 		const readerType = 'FirstDataPOS';
 
 		let orderedProd = {
-			productId: product.productId,
-			price: 0,
-			qty: qty,
+			id: product.productId,
+			name: product.name,
 			term: product.defaultPurchaseType,
 			productType: product.productType,
+			qty: qty,
 		};
 
 		cartDetails.push(orderedProd);
@@ -479,7 +475,7 @@ class Signup extends Component {
 		let { cartDetails } = this.state;
 
 		cartDetails = cartDetails.filter(item => {
-			return !(item.productId === product.productId);
+			return !(item.id === product.productId);
 		});
 
 		this.setState({
@@ -497,9 +493,9 @@ class Signup extends Component {
 
 		businessInfo[key] = val;
 
-		if (key == 'legalIsDBA') {
+		if (key === 'legalIsDBA') {
 			this.setState({ businessInfo: businessInfo, showLegalDBA: val === 'n' });
-		} else if (key == 'files_taxes') {
+		} else if (key === 'files_taxes') {
 			this.setState({ businessInfo: businessInfo, showEIN: val === 'ein' });
 		} else {
 			this.setState({ businessInfo: businessInfo });
@@ -557,6 +553,7 @@ class Signup extends Component {
 			averageTicket: parseInt(businessInfo.sale_amount),
 			highestTicket: parseInt(businessInfo.sale_amount),
 			category: 'RETAIL',
+			amexMemberId: '12345767'
 		};
 
 		data.merchantTransactionInformation = merchantTransactionInformation;
@@ -610,10 +607,9 @@ class Signup extends Component {
 	 */
 
 	addMerchantLocationInformation = data => {
-		let { businessInfo, showEIN, ownerInfo, showLegalDBA } = this.state;
+		let { businessInfo, ownerInfo, showLegalDBA } = this.state;
 
 		let merchantLocationInformation = [];
-		let merchantInfo = {};
 
 		let timeframeforDelivery = {
 			percentDelivered0Days: '0',
@@ -651,8 +647,11 @@ class Signup extends Component {
 			yearsInBusiness: businessInfo.business_year + '-' + businessInfo.business_month + '-' + '01', //'1919-07-01',
 			yearsAtLocation: businessInfo.business_year + '-' + businessInfo.business_month + '-' + '01', //'1919-07-01',
 			obtained: 'Y',
+			type: 'Company Prepared Tax Returns',
 			endDate: '2027-03-01',
+			cash: '1000',
 			agentEmail: 'test_merchant@gyft.com',
+			numberOfMonths: '12',
 			totalRevenue: '2000',
 			netIncome: '1000',
 			totalAssets: '2500',
@@ -667,11 +666,15 @@ class Signup extends Component {
 			payeezyIndicator: 'N',
 			visa: 'Y',
 			mc: 'N',
+			serviceLevel: '01',
+			tokenType: '01',
+			transArmorTokenType: '0001',
 			fundingCurrency: [{ currency: 'USD' }],
+			contactName: 'contactName',
 			contractSignDate: '2018-01-01',
 			legalContactName: 'test name',
 			irsSparkExclusion: 'N',
-			yearIncorporated: businessInfo.business_year, //'1919-07-01'; + '-' + businessInfo.business_month + '-' + '01'
+			yearIncorporated: businessInfo.business_year || '2000', //'1919-07-01'; + '-' + businessInfo.business_month + '-' + '01'
 		});
 
 		data.merchantLocationInformation = merchantLocationInformation;
@@ -689,15 +692,21 @@ class Signup extends Component {
 			owInfo.push({
 				firstName: this.getFirstName(oi.owner_name),
 				lastName: this.getLastName(oi.owner_name),
-				address:
-					oi.owner_address_2.length > 2 ? oi.owner_address_1 + ', ' + oi.owner_address_2 : oi.owner_address_1,
+				//address: oi.owner_address_2.length > 2 ? oi.owner_address_1 + ', ' + oi.owner_address_2 : oi.owner_address_1,
 				dateOfBirth: oi.owner_dob_year + '-' + oi.owner_dob_month + '-' + oi.owner_dob_day,
-				nationalId: oi.owner_ssn.replace(/-/g, ''),
+				nationalId: oi.owner_ssn.replace(/-/g, '') || '111223344',
 				title: oi.owner_title,
 				percentageOwnership: oi.owner_percent,
-				isPrimary: idx == 0 ? 'Y' : 'N',
+				isPrimary: idx === 0 ? 'Y' : 'N',
+				isCreditBureauReportAvailable: 'Y',
+				bureauScore: '600',
+				governmentDocumentVerified: 'Y',
 				gender: oi.owner_gender,
-				taxId: oi.owner_ssn.replace(/-/g, ''),
+				governmentDocument: 'SSN CARD',
+				thirdPartyDatabaseVerified: 'N',
+				thirdPartyDatabaseType: 'a',
+				taxId: oi.owner_ssn.replace(/-/g, '') || '111223344',
+				nationalIdType: 'SSN',
 			});
 		});
 		data.ownerInformation = owInfo;
@@ -721,6 +730,98 @@ class Signup extends Component {
 	};
 
 	/**
+	 * add pricing details: need pricing to get agreement location info
+	 */
+	addPricingDetails = data => {
+
+		let pricing = {
+			"productId": "2",
+			"description": "Visa Qualified Credit",
+			"feeMinAbsolute": 0,
+			"feeMin": 0,
+			"feeDefault": 0.15,
+			"feeMax": 0,
+			"feeMaxAbsolute": 0,
+			"minAmountAbsolute": 0,
+			"minAmt": 0,
+			"defaultAmt": 0,
+			"maxAmt": 1,
+			"maxAmountAbsolute": 1,
+			"quantity": 1,
+			"rateMinAbsolute": 0,
+			"rateMin": 0,
+			"rateDefault": 3.25,
+			"rateMax": 4,
+			"rateMaxAbsolute": 4,
+			"productName": "Visa Qualified Credit",
+			"productType": "NET_FEE",
+			"isOverride": false,
+			"override": false,
+			"showoncart": false,
+			"purchaseType": "P",
+			"occurrence": {
+				"type": "Transaction"
+			},
+			"groupName": "",
+			"pricingTypeCategory": "ALL"
+		};
+
+		data.pricingDetails = [ pricing ];
+	}
+
+	/**
+	 * add cartDetails
+	 */
+	addCartDetails = data => {
+		/*
+		const { cartDetails } = this.state;
+
+		if( ! (cartDetails && cartDetails.length) ) {
+			return;
+		}
+
+		let cart = [];
+		if (cartDetails.length > 0) {
+			cartDetails.forEach(product => {
+				cart.push(product);
+			});
+		}
+		data.numberOfOutlets = cartDetails.length;
+		*/
+
+		// hardcode cartDetails, otherwise API fails
+		data.numberOfOutlets = 1;
+		const cart = [
+			{
+				"id": 62808,
+				"name": "NMI Gateway Gateway (Payment Connection)",
+				"term": "P",
+				"qty": "1",
+				"productType": "Terminal"
+			},
+			{
+				"id": 10031,
+				"name": "Interchange+",
+				"term": "P",
+				"qty": 1,
+				"productType": "ACQUIRING"
+			}
+		];
+		data.cartDetails = {
+			data: cart,
+			"amount": 0,
+			"shipping_amount": 19.99,
+			"tax": 0,
+			"taxPercent": 0,
+			"total": 0,
+			"status": 0,
+			"shipping_option_id": 1,
+			"purchaseEnabled": true,
+			"total_qty": 1
+		};
+	}
+
+	/**
 	 * submit function
 	 */
 	submit = () => {
@@ -728,19 +829,7 @@ class Signup extends Component {
 			return;
 		}
 
-		const { cartDetails, spin } = this.state;
-
 		let req = {};
-		let data = [];
-		if (cartDetails.length > 0) {
-			cartDetails.forEach(cart => {
-				data.push(cart);
-			});
-		}
-
-		req.cartDetails = { data: data };
-		req.numberOfOutlets = cartDetails.length;
-
 		this.defaultMerchantCreditInfo(req);
 		this.defaultSiteSurvey(req);
 		this.addMerchantTransactionInformation(req);
@@ -748,6 +837,8 @@ class Signup extends Component {
 		this.addMerchantLocationInformation(req);
 		this.addOwnerInfo(req);
 		this.addBankInformation(req);
+		this.addPricingDetails(req);
+		this.addCartDetails(req);
 
 		ServiceActions.pfacSignup(req);
 		this.setState({
@@ -762,9 +853,7 @@ class Signup extends Component {
 		let {
 			formErrors,
 			businessInfo,
-			actionIcon,
 			bankingInfo,
-			cardReaderQty,
 			shippingInfo,
 			spin,
 			showEIN,
@@ -772,21 +861,10 @@ class Signup extends Component {
 			cartDetails,
 		} = this.state;
 
-		const eyeIcon = {
-			className: actionIcon,
-			title: '',
-			onClick: () => this.iconClick(),
-		};
-
-		const readerType = 'FirstDataPOS';
-
 		const OwnerComponents = this.setupOwnerComponents();
 
 		const eqProducts = this.props.products.map(c => {
-			let index = cartDetails.findIndex(e => e.productId === c.productId);
-			let isReader = c.offeringTypes.find(type => type === readerType) !== undefined ? true : false;
-			let isCartEmpty = cartDetails.length === 0 ? true : false;
-
+			let index = cartDetails.findIndex(e => e.id === c.productId);
 			let thumbImg;
 			let thumbUrl = '//cdn.firstdata.com/global/img/default-placeholder.png';
 
@@ -795,12 +873,12 @@ class Signup extends Component {
 				let thumbIndex = -1,
 					largeIndex = -1;
 				for (let i = 0; i < c.imageUrls.length; i++) {
-					if (thumbIndex == -1 && c.imageUrls[i].indexOf('thumb') > -1) {
+					if (thumbIndex === -1 && c.imageUrls[i].indexOf('thumb') > -1) {
 						thumbIndex = i;
-					} else if (largeIndex == -1 && c.imageUrls[i].indexOf('large') > -1) {
+					} else if (largeIndex === -1 && c.imageUrls[i].indexOf('large') > -1) {
 						largeIndex = i;
 					}
-					if (thumbIndex != -1 && largeIndex != -1) break;
+					if (thumbIndex !== -1 && largeIndex !== -1) break;
 				}
 
 				if (thumbIndex > -1) {
@@ -844,7 +922,7 @@ class Signup extends Component {
 		});
 
 		if (this.props.orderId) {
-			return <Redirect to={'/finish'} />;
+			return <Redirect to={'/agreement'} />;
 		}
 
 		return (
@@ -852,18 +930,10 @@ class Signup extends Component {
 				<div id="breadcrumb-anchor" />
 				<div id="breadcrumb">
 					<div className="breadcrumb-inner container">
-						<div className="breadcrumb-mobile">
-							<a id="mobile-breadcrumb-toggle" className="current">
-								<i className="fa fa-chevron-down" /> <span>Troop Information</span>
-							</a>
-						</div>
 						<ul>
-							<li>
-								<a className="current">Business Information</a>
-							</li>
-							<li>
-								<a style={{ color: '#aaa' }}>Finish</a>
-							</li>
+							<li><a className="current">Business Information</a></li>
+							<li><a style={{ color: '#aaa' }}>Merchant Agreement</a></li>
+							<li><a style={{ color: '#aaa' }}>Finish</a></li>
 						</ul>
 					</div>
 				</div>

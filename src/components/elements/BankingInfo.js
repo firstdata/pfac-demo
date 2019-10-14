@@ -57,18 +57,17 @@ class BankingInfo extends Component {
 			{
 				inputType: 'custom',
 				getComponents: () => {
-					return routingError ? (
-						<p className="form-error-detail">
-							{' '}
-							<i className="fa fa-info-circle" /> {routingError}{' '}
+					return (routingError ?
+						<p className="form-error-detail" key="error">
+							<i className="fa fa-info-circle" />
+							{routingError}
 						</p>
-					) : '' || routingInfo ? (
-						<p className="small align-right">
-							<i className="fa fa-check-circle" style={{ color: 'forestgreen', marginRight: '4px' }} />{' '}
-							{routingInfo}{' '}
+					: routingInfo ?
+						<p className="small align-right" key="info">
+							<i className="fa fa-check-circle" style={{ color: 'forestgreen', marginRight: '4px' }} />
+							{routingInfo}
 						</p>
-					) : (
-						''
+						: null
 					);
 				},
 			},
